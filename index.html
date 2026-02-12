@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspección de BPMs - Control de Calidad</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="date"],
+        input[type="time"],
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: Arial, sans-serif;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+            font-size: 13px;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #138496;
+        }
+
+        .buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-btn:hover {
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Tabla de inspección */
+        .inspection-table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .inspection-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .inspection-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border: 1px solid #5568d3;
+            font-size: 11px;
+            min-width: 80px;
+        }
+
+        .inspection-table th.name-column {
+            min-width: 200px;
+            text-align: left;
+            position: sticky;
+            left: 0;
+            z-index: 11;
+        }
+
+        .inspection-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .inspection-table td.name-cell {
+            text-align: left;
+            font-weight: 600;
+            background: #f8f9fa;
+            position: sticky;
+            left: 0;
+            z-index: 5;
+            border-right: 2px solid #667eea;
+        }
+
+        .inspection-table tr:hover td {
+            background: #f0f4ff;
+        }
+
+        .inspection-table tr:hover td.name-cell {
+            background: #e7ecff;
+        }
+
+        .status-selector {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .status-btn {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            background: white;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .status-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .status-btn.selected-cumple {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        .status-btn.selected-no-cumple {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .status-btn.selected-ausente {
+            background: #ffc107;
+            color: #333;
+            border-color: #ffc107;
+        }
+
+        .accion-correctiva-cell {
+            padding: 5px !important;
+        }
+
+        .accion-correctiva-cell textarea {
+            width: 100%;
+            min-height: 50px;
+            font-size: 11px;
+            padding: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            font-size: 28px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+        }
+
+        #inspectionTableSection {
+            display: none;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+        }
+
+        .legend-box {
+            width: 25px;
+            height: 25px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .inspection-table {
+                font-size: 10px;
+            }
+
+            .inspection-table th {
+                padding: 8px 4px;
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Inspección de Buenas Prácticas de Manufactura</h1>
+        <p class="subtitle">Sistema de Control de Calidad - FSSC 22000</p>
+
+        <!-- Estadísticas -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-number" id="totalInspecciones">0</div>
+                <div class="stat-label">Total Inspecciones</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="inspeccionesHoy">0</div>
+                <div class="stat-label">Hoy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="inspeccionesMes">0</div>
+                <div class="stat-label">Este Mes</div>
+            </div>
+        </div>
+
+        <!-- Pestañas -->
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="cambiarTab('nueva')">➕ Nueva Inspección</button>
+            <button class="tab-btn" onclick="cambiarTab('historial')">📊 Historial</button>
+        </div>
+
+        <!-- Tab: Nueva Inspección -->
+        <div id="tabNueva" class="tab-content active">
+            <!-- Información General -->
+            <div class="section">
+                <div class="section-title">Información de la Inspección</div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="fecha">Fecha de Inspección *</label>
+                        <input type="date" id="fecha" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="hora">Hora de Inspección *</label>
+                        <input type="time" id="hora" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inspector">Nombre del Inspector *</label>
+                    <input type="text" id="inspector" placeholder="Ingrese su nombre completo" required>
+                </div>
+                <div class="form-group">
+                    <label for="area">Área a Inspeccionar *</label>
+                    <select id="area" onchange="cargarTablaInspeccion()">
+                        <option value="">-- Seleccione un área --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tabla de Inspección -->
+            <div id="inspectionTableSection" class="section">
+                <div class="section-title">Inspección del Área: <span id="areaSeleccionada"></span></div>
+                
+                <div class="alert alert-info">
+                    <strong>Instrucciones:</strong> Para cada persona, marque ✓ si cumple, ✗ si NO cumple (y agregue acción correctiva), o A si está ausente (no se registrará).
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #28a745; color: white;">✓</div>
+                        <span>Cumple</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #dc3545; color: white;">✗</div>
+                        <span>NO Cumple</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: #ffc107; color: #333;">A</div>
+                        <span>Ausente</span>
+                    </div>
+                </div>
+
+                <div class="inspection-table-container">
+                    <table class="inspection-table" id="inspectionTable">
+                        <thead id="tableHeader"></thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="buttons-container">
+                    <button class="btn btn-success" onclick="guardarInspeccionMasiva()">💾 Guardar Todas las Inspecciones</button>
+                    <button class="btn btn-secondary" onclick="cancelarInspeccion()">❌ Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Historial -->
+        <div id="tabHistorial" class="tab-content">
+            <div class="section">
+                <div class="section-title">Base de Datos de Inspecciones</div>
+                <div class="alert alert-info">
+                    📊 Total de inspecciones guardadas: <strong id="totalGuardadas">0</strong>
+                </div>
+                <div class="buttons-container">
+                    <button class="btn btn-success" onclick="descargarBaseDatos()">
+                        💾 Descargar Base de Datos Completa (Excel)
+                    </button>
+                    <button class="btn btn-info" onclick="verHistorial()">
+                        👁️ Ver Últimas 50 Inspecciones
+                    </button>
+                    <button class="btn btn-danger" onclick="borrarBaseDatos()">
+                        🗑️ Borrar Toda la Base de Datos
+                    </button>
+                </div>
+                
+                <div id="historialDetalle" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para ver detalles -->
+    <div id="detalleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Detalles de Inspección</h2>
+                <button class="modal-close" onclick="cerrarModal()">&times;</button>
+            </div>
+            <div id="detalleContenido"></div>
+        </div>
+    </div>
+
+    <script>
+        // Base de datos de personal
+        const personalData = {
+            "ADMINISTRACION": ["DELMY DANIELA GODINEZ (RRHH)","ALVARO FERNANDO ROMERO ( MENSAJERO)","BERENICE LORIÁN ( RECEPCION)","CARLOS CIFUENTES (AUDITOR)","DIEGO SANTIZO (PRODUCCION)","FERNANDO YANTUCHE ( FINANCIERO)","FLOR DE MARIA GONZALEZ (GERENCIA)","GABRIELA MALDONADO (FACTURACION)","GUSTAVO ADOLFO BUCUP PAZ ( INFORMATICA)","HERBERT PERALTA ( PRODUCCION)","IRENE LLAMAS (CONTA)","JOHNATAN ELIISEO GARCIA (CONTA)","JOSUE LOPEZ ( CONTA)","KELLY YESSEL SALAZAR ( CAJA)","LUZ CLARITA GALICIA (COMPRAS)","LYLIAN AREVALO (ARCHIVO)","OLIVER AGUIRE ( CONTA)","PABLO JESUS CAMEY (IT)","RAQUEL CRUZ (RRHH)","SARA ANDRADE (CONTA)","TELMA LIZBETH BONILLA (CONTA)"],
+            "AYUDANTE DESP": ["CRISTOFER DAVID HERNANDEZ ARIAS","CHARLIN GABRIEL SANTOS","EDILCER GOMEZ","HECTOR RAMOS","JOSE MORALES","KLEVER PEREZ","LOUDWIN CASTILLO","PABLO XILOJ","RAFAEL MAURICIO CRUZ BRAN","SERGIO MIJANGOS GOMEZ"],
+            "BODEGA": ["CARLOS ROBERTO CARIAS GARCIA","DENIS ALEZANDER SANTOS GARCIA","DIEGO MANUEL CANAA","EDDY EDUARDO MIJANGOS GALICIA","EDGAR COCS","ERICK LEMUS","FAUSTO ENRIQUE CASTILLO HERNANDEZ","GERARDO GONZALEZ","JAIME VAZQUES (OFICINA)","JONATHAN JAVIER REYES GARCIA","JULIO PAIZ","MIGUEL XUYA","MYNOR GABRIEL GARRIDO","RAFAEL MELGAR"],
+            "CONTROL CALIDAD": ["CARLOS ENRIQUE ALBIZURES IBAÑEZ","DIMAS ARIEL ALEJANDRO LOPEZ","SAUDY ARLEN CORTEZ MUÑOZ","LISBETH MELISSA GÓMEZ DÍAZ","LUIS ALFREDO RAMÍREZ Y RAMÍREZ"],
+            "EMPAQUE": ["JIMMY SAID CARIAS MENDEZ","ELIAN CARBAJAL","ENGELBER HERNANDEZ","GILBERTO MEJIA","JOAN GALICIA","JOSE EDUARDO PAZ","WILDER RUIZ RODRIGUEZ"],
+            "FRIJOL": ["CARLOS ALFREDO CABRERA MENDOZA","CARLOS ANTONIO RODRIGUEZ RUIZ","LAUREANO RAMOS"],
+            "MANTENIMIENTO": ["CESAR AUGUSTO HERNANDEZ","AMILCAR MARTINES","EDGAR VICENTE HUERTAS","ESTUARDO ISCAC LOPEZ","JONATHAN CRUZ","JONNY CAAL","OSCAR ALEJANDRO MAYEN"],
+            "MOLINO": ["ANGEL MANUEL CARIAS","CARLOS RODRIGUEZ SANCHEZ","EDER GOMEZ","JORGE HERNADEZ","JOSE ALFREDO GALICIA","JOSÉ ALONSO MORATAYA","LUIS GONZALES","MARVIN MIJANGOS"],
+            "PILOTO": ["VICTOR GIRON","CESAR GOMEZ","EBER GAMALIEL PAZ PINEDA","EDUARDO TORREZ","ESVIN RONALDO ALVIZURES PINEDA","GEOVANY RODAS","GUILY NOLBERTO ALVAREZ GANZALEZ","JOSE DEL CID","JOSE VICTOR RODAS MORALES","JUAN DE DIOS CULAJAY MIJANGOS","JULIO ANTONIO AVENDAÑO GARCIA","LUIS ALBERTO VELIZ CATALAN","MELVIN SURIANO"],
+            "PRECOCIDO": ["BAUDILIO MIJANGOS","CRISTOBAL ALVISUREZ","EDGAR HERNÁNDEZ","GERMAN DE JESUS HERNANDEZ","JAIRO GARCIA","JUAN CARLOS GALICIA","JUAN CARLOS MIJANGOS","MELVIN ROLANDO PEÑA"],
+            "SANIDAD": ["FRANCISCO GARCIA","JUAN CARLOS CARDONA","MAGDALENA RIVERA","MARIA HERLINDA","WILDER JOSUE MUCHUCH"],
+            "SUMINISTROS": ["ARON RODRIGUEZ"],
+            "ZARANDA": ["ALMA SANTOS","LESLY ORTEGA","THELMA SANTOS"]
+        };
+
+        // Items del checklist BPMs (versiones cortas para columnas)
+        const checklistItems = [
+            { full: "SE PRESENTA ASEADO (BAÑO DIARIO)", short: "Aseado" },
+            { full: "UÑAS CORTAS Y LIBRES DE ESMALTE", short: "Uñas Cortas" },
+            { full: "UÑAS LIMPIAS", short: "Uñas Limpias" },
+            { full: "CABELLO CORTO, O BIEN RECOGIDO", short: "Cabello" },
+            { full: "BIGOTE Y BARBA RASURADO", short: "Barba" },
+            { full: "MANOS LIMPIAS", short: "Manos" },
+            { full: "UNIFORME COMPLETO LIMPIO", short: "Uniforme" },
+            { full: "REDECILLA LIMPIA", short: "Redecilla" },
+            { full: "USO TAPONES AUDITIVOS", short: "Tapones" },
+            { full: "MASCARILLA", short: "Mascarilla" },
+            { full: "ZAPATOS DE SEGURIDAD", short: "Zapatos" },
+            { full: "AUSENCIA DE JOYAS", short: "Sin Joyas" },
+            { full: "NO INGIERE ALIMENTOS EN AREAS DE TRABAJO", short: "No Come" },
+            { full: "EVITA TOSER, ESCUPIR, ESTORNUDAR, FUMAR", short: "Higiene" },
+            { full: "NO PRESENTA HERIDAS O CORTADURAS EXPUESTA", short: "Sin Heridas" },
+            { full: "NO PRESENTA SIGNOS DE ENFERMEDAD", short: "Sin Enfermedad" }
+        ];
+
+        // Datos de la tabla actual
+        let datosTabla = {};
+
+        // Inicializar la aplicación
+        window.onload = function() {
+            // Establecer fecha y hora actual
+            const now = new Date();
+            document.getElementById('fecha').valueAsDate = now;
+            document.getElementById('hora').value = now.toTimeString().slice(0,5);
+
+            // Cargar áreas en el selector
+            const areaSelect = document.getElementById('area');
+            Object.keys(personalData).sort().forEach(area => {
+                const option = document.createElement('option');
+                option.value = area;
+                option.textContent = area;
+                areaSelect.appendChild(option);
+            });
+
+            // Actualizar estadísticas
+            actualizarEstadisticas();
+        };
+
+        function cargarTablaInspeccion() {
+            const area = document.getElementById('area').value;
+            
+            if (!area) {
+                document.getElementById('inspectionTableSection').style.display = 'none';
+                return;
+            }
+
+            const fecha = document.getElementById('fecha').value;
+            const hora = document.getElementById('hora').value;
+            const inspector = document.getElementById('inspector').value;
+
+            if (!fecha || !hora || !inspector) {
+                alert('Por favor complete Fecha, Hora y Nombre del Inspector antes de seleccionar el área');
+                document.getElementById('area').value = '';
+                return;
+            }
+
+            document.getElementById('areaSeleccionada').textContent = area;
+            document.getElementById('inspectionTableSection').style.display = 'block';
+
+            // Crear encabezado de tabla
+            const tableHeader = document.getElementById('tableHeader');
+            tableHeader.innerHTML = '';
+            const headerRow = document.createElement('tr');
+            
+            // Columna de nombres
+            const nameHeader = document.createElement('th');
+            nameHeader.className = 'name-column';
+            nameHeader.textContent = 'NOMBRE';
+            headerRow.appendChild(nameHeader);
+
+            // Columnas de items
+            checklistItems.forEach(item => {
+                const th = document.createElement('th');
+                th.textContent = item.short;
+                th.title = item.full;
+                headerRow.appendChild(th);
+            });
+
+            tableHeader.appendChild(headerRow);
+
+            // Crear filas de personas
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            datosTabla = {};
+
+            personalData[area].forEach((nombre, personIndex) => {
+                const row = document.createElement('tr');
+                
+                // Celda de nombre
+                const nameCell = document.createElement('td');
+                nameCell.className = 'name-cell';
+                nameCell.textContent = nombre;
+                row.appendChild(nameCell);
+
+                // Inicializar datos de esta persona
+                datosTabla[nombre] = {};
+
+                // Celdas de items
+                checklistItems.forEach((item, itemIndex) => {
+                    const cell = document.createElement('td');
+                    const cellId = `cell-${personIndex}-${itemIndex}`;
+                    
+                    const selector = document.createElement('div');
+                    selector.className = 'status-selector';
+                    
+                    // Botón Cumple
+                    const btnCumple = document.createElement('button');
+                    btnCumple.className = 'status-btn';
+                    btnCumple.innerHTML = '✓';
+                    btnCumple.title = 'Cumple';
+                    btnCumple.onclick = () => seleccionarEstado(nombre, item.full, 'cumple', personIndex, itemIndex);
+                    
+                    // Botón NO Cumple
+                    const btnNoCumple = document.createElement('button');
+                    btnNoCumple.className = 'status-btn';
+                    btnNoCumple.innerHTML = '✗';
+                    btnNoCumple.title = 'NO Cumple';
+                    btnNoCumple.onclick = () => seleccionarEstado(nombre, item.full, 'no-cumple', personIndex, itemIndex);
+                    
+                    // Botón Ausente
+                    const btnAusente = document.createElement('button');
+                    btnAusente.className = 'status-btn';
+                    btnAusente.innerHTML = 'A';
+                    btnAusente.title = 'Ausente';
+                    btnAusente.onclick = () => seleccionarEstado(nombre, item.full, 'ausente', personIndex, itemIndex);
+                    
+                    selector.appendChild(btnCumple);
+                    selector.appendChild(btnNoCumple);
+                    selector.appendChild(btnAusente);
+                    
+                    cell.appendChild(selector);
+                    
+                    // Agregar celda para acción correctiva (oculta por defecto)
+                    const accionCell = document.createElement('div');
+                    accionCell.id = `accion-${personIndex}-${itemIndex}`;
+                    accionCell.style.display = 'none';
+                    accionCell.style.marginTop = '5px';
+                    
+                    const accionTextarea = document.createElement('textarea');
+                    accionTextarea.placeholder = 'Acción correctiva...';
+                    accionTextarea.id = `accionText-${personIndex}-${itemIndex}`;
+                    accionTextarea.style.width = '150px';
+                    accionTextarea.style.fontSize = '11px';
+                    accionTextarea.style.padding = '4px';
+                    accionTextarea.style.minHeight = '40px';
+                    
+                    accionCell.appendChild(accionTextarea);
+                    cell.appendChild(accionCell);
+                    
+                    row.appendChild(cell);
+
+                    // Inicializar estado
+                    datosTabla[nombre][item.full] = {
+                        estado: null,
+                        accion: ''
+                    };
+                });
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        function seleccionarEstado(nombre, item, estado, personIndex, itemIndex) {
+            // Actualizar datos
+            datosTabla[nombre][item].estado = estado;
+
+            // Actualizar estilos de botones
+            const cell = document.querySelector(`#tableBody tr:nth-child(${personIndex + 1}) td:nth-child(${itemIndex + 2})`);
+            const buttons = cell.querySelectorAll('.status-btn');
+            
+            buttons.forEach(btn => {
+                btn.classList.remove('selected-cumple', 'selected-no-cumple', 'selected-ausente');
+            });
+
+            if (estado === 'cumple') {
+                buttons[0].classList.add('selected-cumple');
+                document.getElementById(`accion-${personIndex}-${itemIndex}`).style.display = 'none';
+            } else if (estado === 'no-cumple') {
+                buttons[1].classList.add('selected-no-cumple');
+                document.getElementById(`accion-${personIndex}-${itemIndex}`).style.display = 'block';
+            } else if (estado === 'ausente') {
+                buttons[2].classList.add('selected-ausente');
+                document.getElementById(`accion-${personIndex}-${itemIndex}`).style.display = 'none';
+            }
+        }
+
+        function guardarInspeccionMasiva() {
+            const fecha = document.getElementById('fecha').value;
+            const hora = document.getElementById('hora').value;
+            const inspector = document.getElementById('inspector').value;
+            const area = document.getElementById('area').value;
+
+            let inspeccionesGuardadas = 0;
+            let personasAusentes = 0;
+
+            // Procesar cada persona
+            Object.keys(datosTabla).forEach(nombre => {
+                const resultados = datosTabla[nombre];
+                
+                // Verificar si la persona tiene al menos un estado marcado (que no sea ausente en todos)
+                const tieneEstados = Object.values(resultados).some(r => r.estado === 'cumple' || r.estado === 'no-cumple');
+                
+                // Verificar si está completamente ausente
+                const estadosUnicos = [...new Set(Object.values(resultados).map(r => r.estado))];
+                const todosAusente = estadosUnicos.length === 1 && estadosUnicos[0] === 'ausente';
+                const todosNull = estadosUnicos.length === 1 && estadosUnicos[0] === null;
+                
+                if (todosAusente || todosNull) {
+                    personasAusentes++;
+                    return; // No guardar esta persona
+                }
+
+                // Recopilar resultados con acciones correctivas
+                const resultadosFinales = {};
+                checklistItems.forEach((item, index) => {
+                    const dato = resultados[item.full];
+                    
+                    if (dato.estado === 'ausente' || dato.estado === null) {
+                        // No incluir en el registro
+                        return;
+                    }
+
+                    const personIndex = Object.keys(datosTabla).indexOf(nombre);
+                    const accionText = document.getElementById(`accionText-${personIndex}-${index}`)?.value || '';
+
+                    resultadosFinales[item.full] = {
+                        cumple: dato.estado === 'cumple' ? 'CUMPLE' : 'NO CUMPLE',
+                        accion: dato.estado === 'no-cumple' ? (accionText || 'Sin acción registrada') : ''
+                    };
+                });
+
+                // Solo guardar si tiene al menos un resultado
+                if (Object.keys(resultadosFinales).length > 0) {
+                    const inspeccion = {
+                        id: Date.now() + inspeccionesGuardadas,
+                        fecha,
+                        hora,
+                        inspector,
+                        area,
+                        nombre,
+                        resultados: resultadosFinales,
+                        timestamp: new Date().toISOString()
+                    };
+
+                    guardarInspeccionEnBD(inspeccion);
+                    inspeccionesGuardadas++;
+                }
+            });
+
+            if (inspeccionesGuardadas === 0) {
+                alert('⚠️ No se guardó ninguna inspección.\n\nAsegúrese de marcar al menos un ítem para cada persona que desea inspeccionar.');
+                return;
+            }
+
+            actualizarEstadisticas();
+
+            let mensaje = `✅ Se guardaron ${inspeccionesGuardadas} inspecciones exitosamente`;
+            if (personasAusentes > 0) {
+                mensaje += `\n\n📋 ${personasAusentes} personas marcadas como ausentes (no se registraron)`;
+            }
+
+            alert(mensaje);
+
+            // Limpiar formulario
+            document.getElementById('area').value = '';
+            document.getElementById('inspectionTableSection').style.display = 'none';
+            datosTabla = {};
+        }
+
+        function cancelarInspeccion() {
+            if (confirm('¿Está seguro de cancelar? Se perderán todos los datos ingresados.')) {
+                document.getElementById('area').value = '';
+                document.getElementById('inspectionTableSection').style.display = 'none';
+                datosTabla = {};
+            }
+        }
+
+        function guardarInspeccionEnBD(inspeccion) {
+            let inspecciones = JSON.parse(localStorage.getItem('inspecciones_bpms') || '[]');
+            inspecciones.push(inspeccion);
+            localStorage.setItem('inspecciones_bpms', JSON.stringify(inspecciones));
+        }
+
+        function obtenerTodasLasInspecciones() {
+            return JSON.parse(localStorage.getItem('inspecciones_bpms') || '[]');
+        }
+
+        function actualizarEstadisticas() {
+            const inspecciones = obtenerTodasLasInspecciones();
+            const hoy = new Date().toISOString().split('T')[0];
+            const mesActual = new Date().toISOString().slice(0, 7);
+
+            const inspeccionesHoy = inspecciones.filter(i => i.fecha === hoy).length;
+            const inspeccionesMes = inspecciones.filter(i => i.fecha.startsWith(mesActual)).length;
+
+            document.getElementById('totalInspecciones').textContent = inspecciones.length;
+            document.getElementById('inspeccionesHoy').textContent = inspeccionesHoy;
+            document.getElementById('inspeccionesMes').textContent = inspeccionesMes;
+            document.getElementById('totalGuardadas').textContent = inspecciones.length;
+        }
+
+        function cambiarTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            if (tab === 'nueva') {
+                document.getElementById('tabNueva').classList.add('active');
+            } else if (tab === 'historial') {
+                document.getElementById('tabHistorial').classList.add('active');
+                actualizarEstadisticas();
+            }
+        }
+
+        function descargarBaseDatos() {
+            const inspecciones = obtenerTodasLasInspecciones();
+
+            if (inspecciones.length === 0) {
+                alert('No hay inspecciones para descargar');
+                return;
+            }
+
+            const excelData = [];
+            
+            inspecciones.forEach(insp => {
+                const row = {
+                    'Fecha': insp.fecha,
+                    'Hora': insp.hora,
+                    'Inspector': insp.inspector,
+                    'Área': insp.area,
+                    'Nombre': insp.nombre
+                };
+
+                Object.keys(insp.resultados).forEach(item => {
+                    row[item] = insp.resultados[item].cumple;
+                    if (insp.resultados[item].cumple === 'NO CUMPLE') {
+                        row[item + ' - ACCIÓN CORRECTIVA'] = insp.resultados[item].accion;
+                    }
+                });
+
+                excelData.push(row);
+            });
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(excelData);
+
+            const colWidths = [
+                { wch: 12 },
+                { wch: 8 },
+                { wch: 30 },
+                { wch: 20 },
+                { wch: 35 }
+            ];
+            
+            ws['!cols'] = colWidths;
+
+            XLSX.utils.book_append_sheet(wb, ws, "Inspecciones BPMs");
+
+            const ahora = new Date();
+            const filename = `BD_Inspecciones_BPMs_${ahora.getFullYear()}${String(ahora.getMonth()+1).padStart(2,'0')}${String(ahora.getDate()).padStart(2,'0')}.xlsx`;
+
+            XLSX.writeFile(wb, filename);
+
+            alert(`✅ Base de datos descargada exitosamente!\n\nArchivo: ${filename}\nTotal de inspecciones: ${inspecciones.length}`);
+        }
+
+        function verHistorial() {
+            const inspecciones = obtenerTodasLasInspecciones();
+            const ultimas = inspecciones.slice(-50).reverse();
+
+            const historialDiv = document.getElementById('historialDetalle');
+
+            if (ultimas.length === 0) {
+                historialDiv.innerHTML = '<div class="empty-state">No hay inspecciones guardadas</div>';
+                return;
+            }
+
+            let html = '<div style="background: white; padding: 15px; border-radius: 8px; margin-top: 15px;">';
+            html += '<h3 style="margin-bottom: 15px;">Últimas 50 Inspecciones</h3>';
+            
+            ultimas.forEach(insp => {
+                const noCumple = Object.values(insp.resultados).filter(r => r.cumple === 'NO CUMPLE').length;
+                html += `
+                    <div style="background: #f8f9fa; padding: 12px; margin-bottom: 10px; border-radius: 6px; border-left: 4px solid ${noCumple > 0 ? '#dc3545' : '#28a745'}">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>${insp.nombre}</strong><br>
+                                <small>${insp.area} - ${insp.fecha} ${insp.hora} - Inspector: ${insp.inspector}</small><br>
+                                <small style="color: ${noCumple > 0 ? '#dc3545' : '#28a745'}; font-weight: bold;">
+                                    ${noCumple > 0 ? `⚠️ ${noCumple} ítems NO cumplen` : '✅ Todos los ítems cumplen'}
+                                </small>
+                            </div>
+                            <button class="btn btn-info" style="margin: 0;" onclick="verDetalleInspeccion(${insp.id})">Ver Detalle</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            historialDiv.innerHTML = html;
+        }
+
+        function verDetalleInspeccion(id) {
+            const inspecciones = obtenerTodasLasInspecciones();
+            const inspeccion = inspecciones.find(i => i.id === id);
+
+            if (!inspeccion) {
+                alert('Inspección no encontrada');
+                return;
+            }
+
+            let html = `
+                <div style="margin-bottom: 20px;">
+                    <strong>Fecha:</strong> ${inspeccion.fecha} ${inspeccion.hora}<br>
+                    <strong>Inspector:</strong> ${inspeccion.inspector}<br>
+                    <strong>Área:</strong> ${inspeccion.area}<br>
+                    <strong>Persona Inspeccionada:</strong> ${inspeccion.nombre}
+                </div>
+                <h3 style="margin-bottom: 15px;">Resultados del Checklist:</h3>
+            `;
+
+            Object.keys(inspeccion.resultados).forEach(item => {
+                const resultado = inspeccion.resultados[item];
+                const color = resultado.cumple === 'CUMPLE' ? '#28a745' : '#dc3545';
+                
+                html += `
+                    <div style="background: #f8f9fa; padding: 12px; margin-bottom: 8px; border-radius: 6px; border-left: 4px solid ${color}">
+                        <div style="font-weight: bold; color: ${color};">${resultado.cumple}</div>
+                        <div>${item}</div>
+                        ${resultado.cumple === 'NO CUMPLE' ? `
+                            <div style="margin-top: 8px; padding: 8px; background: #fff3cd; border-radius: 4px;">
+                                <strong>Acción Correctiva:</strong><br>
+                                ${resultado.accion}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+
+            document.getElementById('detalleContenido').innerHTML = html;
+            document.getElementById('detalleModal').style.display = 'block';
+        }
+
+        function cerrarModal() {
+            document.getElementById('detalleModal').style.display = 'none';
+        }
+
+        function borrarBaseDatos() {
+            const inspecciones = obtenerTodasLasInspecciones();
+            
+            if (inspecciones.length === 0) {
+                alert('No hay inspecciones para borrar');
+                return;
+            }
+
+            if (!confirm(`⚠️ ADVERTENCIA ⚠️\n\n¿Está COMPLETAMENTE SEGURO de borrar toda la base de datos?\n\nSe eliminarán ${inspecciones.length} inspecciones de forma PERMANENTE.\n\nEsta acción NO se puede deshacer.`)) {
+                return;
+            }
+
+            if (!confirm('Por favor confirme nuevamente que desea BORRAR TODA LA BASE DE DATOS')) {
+                return;
+            }
+
+            localStorage.removeItem('inspecciones_bpms');
+            
+            actualizarEstadisticas();
+            document.getElementById('historialDetalle').innerHTML = '';
+
+            alert('✅ Base de datos borrada exitosamente');
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('detalleModal');
+            if (event.target == modal) {
+                cerrarModal();
+            }
+        }
+    </script>
+</body>
+</html>
